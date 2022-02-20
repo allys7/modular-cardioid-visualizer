@@ -5,6 +5,12 @@ In reality, these shapes just come from mathematical properties relating to modu
 I am (tangentially) learning about this in my introduction to cryptography class, so I figured it would be fun to implement the program that Mathologer mentioned in his video.
 It was a good excuse for me to learn some about [Flask](https://palletsprojects.com/p/flask/) and [NetworkX](https://networkx.org/), two Python packages I used to generate the graph.
 
+# Examples
+
+![Modulus 282, multiplier 2](/static/283,2.png)
+![Modulus 173, multiplier 4](/static/173,4.png)
+![Modulus 842, multiplier 7](/static/842,7.png)
+
 # Current Features
 
 - Dynamic graph generation based on modulus and multiplier
