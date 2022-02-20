@@ -1,14 +1,36 @@
 <html>
-  <head>
-    <title>Graph</title>
-  </head>
 
-  <body>
-    <h1>Graph</h1>
-    <img
-      src="{{ url_for('graph', mod=mod, mult=mult) }}"
-      alt="Complete Graph with modulus {{ mod }} and a multiplier of {{ mult }}"
-      height="90%"
-    />
-  </body>
+<head>
+    <title>Cardioid Structure {{mod, mult}}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+</head>
+
+<body>
+    <div class="sidenav">
+        <h1>Cardioid Structure</h1>
+        <h4>(Mod: {{ mod }}, multiplier: {{ mult }})</h4>
+
+        <label for="mod">Modulus:</label>
+        <input type="number" id="mod" min="2" maxlength="4" value="{{mod}}"><br/>
+
+        <label for"mult">Multiplier:</label>
+        <input type="number" id="mult" min="2" maxlength="3" value="{{mult}}"><br/>
+
+        <button id="generate" onclick="generateCardioid();">Generate Cardioid</button>
+    </div>
+    <div class="graph">
+        <img src="{{ url_for('graph', mod=mod, mult=mult) }}"
+            alt="Cardioid structure made with modulus {{ mod }} and a multiplier of {{ mult }}" height="100%"/>
+    </div>
+    <script>
+        function generateCardioid() {
+            let mod = document.getElementById("mod").value;
+            let mult = document.getElementById("mult").value;
+            console.log(mod);
+            console.log(mult);
+            window.location.replace(`/${mod},${mult}`) 
+        }
+    </script>
+</body>
+
 </html>
