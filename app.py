@@ -1,8 +1,10 @@
 # https://stackoverflow.com/questions/53161395/how-to-draw-networkx-graph-in-flask
 
+from math import exp
+from turtle import color, width
 import matplotlib
 import sys
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, redirect
 from io import BytesIO
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -13,7 +15,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Welcome to the cardiod generator!"
+    return render_template("cardioid.html", mod=9, mult=2)
 
 
 @app.route("/<int:mod>,<int:mult>")
@@ -23,14 +25,27 @@ def cardiod(mod, mult):
 
 @app.route("/graph/<int:mod>,<int:mult>")
 def graph(mod, mult):
-    G, pos = generate_cardioid(mod, mult)
+    G, pos, colors = generate_cardioid(mod, mult)
 
-    nx.draw(G, pos=pos, node_color='black', node_size=500, font_color='white',
-    font_size=20.0, with_labels=True)
+    # arbitrary functions for font and node size
+    # graph options
+    options = {
+        # nodes
+        "node_color": "#A0CBE2",
+        "with_labels": False,
+        "font_size": 2 + (20*exp(-1*mod/70)),
+        "node_size": 10 + (1190*exp(-1*mod/70)),
+
+        # edges
+        "width": .5,
+    }
+    
+    nx.draw(G, pos, edge_color=colors, **options)
 
     # generate & return image
     img = BytesIO()
     # plt.figure(figsize=(24,16))
+    plt.box(False)
     plt.savefig(img, dpi=320)
     img.seek(0)
     plt.close()
@@ -47,19 +62,22 @@ def generate_cardioid(mod: int, mult: int):
     mult: int
         the multiplier to use in each step
 
-    return: (G: DiGraph, pos: dict)
+    return: (G: DiGraph, pos: dict, distances: dict)
         G:   graph representation of cardioid
         pos: positions of nodes in increasing order
+        distances: the unique distance values, used for coloring
     """
 
     # create graph, solidify positions of nodes *in natural order*
     G = nx.DiGraph()
+    colormap = plt.cm.get_cmap('rainbow')
     G.add_nodes_from(range(mod))
-    plt.figure(figsize=(32,24))
+    plt.figure(figsize=(12, 8))
     pos = nx.circular_layout(G)
 
-    # list to track visited numbers
+    # list to track visited numbers as well as distances between nodes
     visited = []
+    distances = {}
 
     # main loop
     for i in range(mod):
@@ -71,7 +89,6 @@ def generate_cardioid(mod: int, mult: int):
         0 to the modulus to ensure every loop is found.
         """
         if i not in visited:
-            # print(f"Starting loop at {i}")
             # new loop found
             current_num = i
 
@@ -84,20 +101,33 @@ def generate_cardioid(mod: int, mult: int):
                 if current_num == next_num:
                     break
 
+                diff = abs(next_num - current_num)
+                key = (current_num, next_num)
+                if key not in distances:
+                    distances[key] = diff
+
                 G.add_edge(current_num, next_num)
                 visited.append(current_num)
-                # print(f"Current num: {current_num}\nNext num: {next_num}\n")
 
                 # iterative step
                 current_num = next_num
-    return G, pos
+
+    # add edges coloring based on distance dict
+    max_dist = max(distances.values())
+    min_dist = min(distances.values())
+    edge_colors = []
+    for edge in G.edges():
+        edge_colors.append(colormap((distances[edge] - min_dist) / (max_dist - min_dist)))
+
+    return G, pos, edge_colors
 
 
 if __name__ == "__main__":
     WEB_APP = True
     # web app
     if WEB_APP:
-        matplotlib.use("Agg")  # allows background processing? not exactly sure how
+        # allows background processing? not exactly sure how
+        matplotlib.use("Agg")
         app.run(debug=True)
 
     LOCAL = not WEB_APP
@@ -105,7 +135,25 @@ if __name__ == "__main__":
     if LOCAL:
         mod = int(sys.argv[1])
         mult = int(sys.argv[2])
-        G, pos = generate_cardioid(mod=mod, mult=mult)
-        # nx.draw_circular(G, with_labels=True)
-        nx.draw(G, pos=pos, with_labels=True)
+        G, pos, edge_colors = generate_cardioid(mod=mod, mult=mult)
+
+        # arbitrary functions for font and node size
+        divisor = 70
+        size_font = 2 + (20*exp(-1*mod/divisor))
+        size_node = 10 + (1190*exp(-1*mod/divisor))
+        colors = range(G.number_of_edges())
+        # graph options
+        options = {
+            # nodes
+            "node_color": "#A0CBE2",
+            "with_labels": False,
+            "font_size": 2 + (20*exp(-1*mod/divisor)),
+            "node_size": 10 + (1190*exp(-1*mod/divisor)),
+
+            # edges
+            "width": .5,
+        }
+
+        nx.draw(G, pos, edge_color=edge_colors, **options)
+
         plt.show()
