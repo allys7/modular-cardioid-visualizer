@@ -1,4 +1,4 @@
-# Modular Cardioid Generator
+# Modular Cardioid Visualizer
 
 This is a simple web app that I created after seeing [Mathologer's video](https://youtu.be/6ZrO90AI0c8) about Tesla's 'Vortex Mathematics', which he believed held the secret to the universe.
 In reality, these shapes just come from mathematical properties relating to modular arithmetic.
